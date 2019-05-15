@@ -66,6 +66,7 @@
 
 #include <uORB/uORB.h>
 #include <uORB/topics/distance_sensor.h>
+#include <uORB/topics/distance_avoidance.h>
 
 #include <board_config.h>
 
@@ -544,6 +545,7 @@ MB12XX::collect()
 	float distance_m = float(distance_cm) * 1e-2f;
 
 	struct distance_sensor_s report;
+    orb_advert_t distance_avoidance_pub = orb_advertise(ORB_ID(distance_avoidance), &report);
 	report.timestamp = hrt_absolute_time();
 	report.type = distance_sensor_s::MAV_DISTANCE_SENSOR_ULTRASOUND;
 	report.orientation = _rotation;
@@ -557,8 +559,11 @@ MB12XX::collect()
 
 	/* publish it, if we are the primary */
 	if (_distance_sensor_topic != nullptr) {
-		orb_publish(ORB_ID(distance_sensor), _distance_sensor_topic, &report);
-	}
+        orb_publish(ORB_ID(distance_avoidance), distance_avoidance_pub, &report);
+        orb_publish(ORB_ID(distance_sensor), _distance_sensor_topic, &report);
+    } else {
+        orb_publish(ORB_ID(distance_avoidance), distance_avoidance_pub, &report);
+    }
 
 	_reports->force(&report);
 

@@ -47,7 +47,9 @@ set(msg_files
 	debug_key_value.msg
 	debug_value.msg
 	debug_vect.msg
+	delivery_signal.msg
 	differential_pressure.msg
+	distance_avoidance.msg
 	distance_sensor.msg
 	ekf2_innovations.msg
 	ekf2_timestamps.msg
@@ -76,6 +78,7 @@ set(msg_files
 	multirotor_motor_limits.msg
 	obstacle_distance.msg
 	offboard_control_mode.msg
+	offboard_setpoint.msg
 	optical_flow.msg
 	parameter_update.msg
 	ping.msg
@@ -91,6 +94,7 @@ set(msg_files
 	rate_ctrl_status.msg
 	rc_channels.msg
 	rc_parameter_map.msg
+	read_uart.msg
 	safety.msg
 	satellite_info.msg
 	sensor_accel.msg

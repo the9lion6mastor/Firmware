@@ -1,0 +1,10 @@
+sh /etc/init.d/4002_quad_x_mount
+if [ $AUTOCNF == yes ]
+then
+param set PWM_AUX_DISARMED 1520
+param set PWM_AUX_MIN 1020
+param set PWM_AUX_MAX 2020
+param set PWM_AUX_RATE 400
+fi
+frsky_telemetry start -d /dev/ttyS6
+gpio_led start -p 6

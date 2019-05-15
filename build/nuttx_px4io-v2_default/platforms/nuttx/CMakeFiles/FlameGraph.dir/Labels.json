@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/platforms/nuttx/CMakeFiles/FlameGraph"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/platforms/nuttx/CMakeFiles/FlameGraph.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/platforms/nuttx/CMakeFiles/FlameGraph-complete.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/external/Stamp/FlameGraph/FlameGraph-install.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/external/Stamp/FlameGraph/FlameGraph-mkdir.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/external/Stamp/FlameGraph/FlameGraph-download.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/external/Stamp/FlameGraph/FlameGraph-update.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/external/Stamp/FlameGraph/FlameGraph-patch.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/external/Stamp/FlameGraph/FlameGraph-configure.rule"
+		},
+		{
+			"file" : "/home/lius/src/Firmware/build/nuttx_px4io-v2_default/external/Stamp/FlameGraph/FlameGraph-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"FlameGraph"
+		],
+		"name" : "FlameGraph"
+	}
+}

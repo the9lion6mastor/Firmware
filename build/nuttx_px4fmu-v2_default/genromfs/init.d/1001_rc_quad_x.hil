@@ -1,0 +1,2 @@
+sh /etc/init.d/4001_quad_x
+param set SYS_HITL 1

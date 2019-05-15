@@ -510,6 +510,11 @@ else
 	# Note: rc.serial is auto-generated from Tools/serial/generate_config.py
 	#
 	sh /etc/init.d/rc.serial
+	
+	#
+	# Start read_uart term3
+	#
+	read_uart start /dev/ttyS2
 
 	if ver hwcmp PX4FMU_V4
 	then

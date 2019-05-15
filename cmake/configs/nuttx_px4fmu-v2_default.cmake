@@ -33,7 +33,7 @@ set(config_module_list
 	drivers/differential_pressure/ms5525
 	drivers/differential_pressure/sdp3x
 	drivers/distance_sensor/ll40ls
-	#drivers/distance_sensor/mb12xx
+	drivers/distance_sensor/mb12xx
 	drivers/distance_sensor/sf0x
 	drivers/distance_sensor/sf1xx
 	#drivers/distance_sensor/srf02
@@ -131,13 +131,18 @@ set(config_module_list
 	#
 	# Vehicle Control
 	#
-	modules/fw_att_control
-	modules/fw_pos_control_l1
+	#modules/fw_att_control
+	#modules/fw_pos_control_l1
 	#modules/gnd_att_control
 	#modules/gnd_pos_control
 	modules/mc_att_control
 	modules/mc_pos_control
 	modules/vtol_att_control
+	modules/get_gps_data
+	modules/avoidance
+	modules/read_uart
+	modules/setpoint_term3
+	modules/offboard_pub
 
 	#
 	# Logging

@@ -63,3 +63,13 @@ mc_pos_control start
 # Start Multicopter Land Detector.
 #
 land_detector start multicopter
+
+
+
+#
+# Start term3 task 3ge
+#
+#setpoint_term3 start
+offboard_pub start
+mb12xx start
+

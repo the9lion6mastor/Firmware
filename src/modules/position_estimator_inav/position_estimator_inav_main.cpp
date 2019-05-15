@@ -1464,7 +1464,8 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 			pos.epv = epv;
 			pos.evh = 0.0f;
 			pos.evv = 0.0f;
-			pos.vxy_max = INFINITY;
+            //step 1
+            pos.vxy_max = (float)0.2;
 			pos.vz_max = INFINITY;
 			pos.hagl_min = INFINITY;
 			pos.hagl_max = INFINITY;

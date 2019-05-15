@@ -161,7 +161,7 @@ MavlinkReceiver::MavlinkReceiver(Mavlink *parent) :
 	_debug_vect_pub(nullptr),
 	_gps_inject_data_pub(nullptr),
 	_command_ack_pub(nullptr),
-	_control_mode_sub(orb_subscribe(ORB_ID(vehicle_control_mode))),
+    _control_mode_sub(orb_subscribe(ORB_ID(vehicle_control_mode))),
 	_actuator_armed_sub(orb_subscribe(ORB_ID(actuator_armed))),
 	_vehicle_attitude_sub(orb_subscribe(ORB_ID(vehicle_attitude))),
 	_global_ref_timestamp(0),
