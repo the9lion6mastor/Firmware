@@ -35,7 +35,7 @@ include(px4_base)
 
 #=============================================================================
 #
-#	px4_add_gtest
+#	px4_add_unit_gtest
 #
 #	Adds a googletest unit test to the test_results target.
 #
