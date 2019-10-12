@@ -132,6 +132,7 @@ set(msg_files
 	wind_estimate.msg
 	read_uart.msg
 	offboard_setpoint.msg
+	delivery_signal.msg
 	)
 
 if(NOT EXTERNAL_MODULES_LOCATION STREQUAL "")
