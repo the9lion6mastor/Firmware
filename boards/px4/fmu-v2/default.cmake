@@ -89,6 +89,7 @@ px4_add_board(
 		vtol_att_control
 		#wind_estimator
 		offboard_pub
+		get_gps_data
 
 	SYSTEMCMDS
 		bl_update
