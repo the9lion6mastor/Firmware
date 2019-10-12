@@ -172,7 +172,7 @@ int get_data_thread_main(int argc, char *argv[])
     int count = 0;
     int count_time = 0;
     int count_drop = 0;
-    int token = 0;
+    int token = 1;
     float32 sum_x = 0.0;
     float32 sum_y = 0.0;
     float32 sum_z = 0.0;
@@ -481,15 +481,6 @@ int get_data_thread_main(int argc, char *argv[])
 
 	    printf("all-channel8:%6.3f",(double)_rc_channels.channels[7]);
             switch (token) {
-	    case 0://throttle
-		count_drop++;
-                if (count_drop < 2) {
-                    _rc_channels.channels[2]=(float32)1;
-                }else{
-		    count_drop = 0;
-		    token = 1;
-		}
-		break;
             case 1:     //A点起飞
                 _offboard_sp.ignore_alt_hold = true;
                 _offboard_sp.ignore_attitude = true;

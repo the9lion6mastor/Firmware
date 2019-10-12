@@ -95,6 +95,10 @@ set(config_module_list
 	modules/mavlink
 	modules/navigator
 	modules/uavcan
+	
+	modules/read_uart
+	modules/offboard_pub
+	modules/get_gps_data
 
 	#
 	# Estimation modules
