@@ -75,7 +75,26 @@ int RCUpdate::init()
 	if (_rc_parameter_map_sub < 0) {
 		return -errno;
 	}
+	struct delivery_signal_s _ds = {};
 
+        _ds.is_point_b = false;
+        _ds.is_point_c = false;
+
+        orb_advert_t delivery_signal_pub = orb_advertise(ORB_ID(delivery_signal), &_ds);
+	orb_publish(ORB_ID(delivery_signal), delivery_signal_pub, &_ds);
+	delivery_signal_sub = orb_subscribe(ORB_ID(delivery_signal));
+
+	
+	
+	struct offboard_setpoint_s    _offsp={};
+        _offsp.x = (float)0.0;
+    	_offsp.y = (float)0.0;
+    	_offsp.z = (float)0.3;
+    	orb_advert_t off_pub = orb_advertise(ORB_ID(offboard_setpoint), &_offsp);
+    	orb_publish(ORB_ID(offboard_setpoint), off_pub, &_offsp);
+
+    	offboard_sp_sub = orb_subscribe(ORB_ID(offboard_setpoint));
+	_rc.channels[7] = (float32)0.1;
 	return 0;
 }
 
@@ -339,7 +358,15 @@ RCUpdate::rc_poll(const ParameterHandles &parameter_handles)
 				/* in the configured dead zone, output zero */
 				_rc.channels[i] = 0.0f;
 			}
-
+orb_copy(ORB_ID(delivery_signal), delivery_signal_sub, &_delivery_signal);
+            if (_delivery_signal.is_point_b == false && _delivery_signal.is_point_c == false)
+                _rc.channels[7] = (float32)-0.7;
+            if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == false)
+                _rc.channels[7] = (float32)0.3;
+            if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == true)
+                _rc.channels[7] = (float32)0.9;
+	    if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == true)
+		_rc.channels[7] = _rc.channels[7];
 			_rc.channels[i] *= _parameters.rev[i];
 
 			/* handle any parameter-induced blowups */
