@@ -90,6 +90,7 @@ px4_add_board(
 		#wind_estimator
 		offboard_pub
 		get_gps_data
+		setpoint_term3
 
 	SYSTEMCMDS
 		bl_update
