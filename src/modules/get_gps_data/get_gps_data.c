@@ -30,6 +30,7 @@
 #include <uORB/topics/offboard_setpoint.h>
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/home_position.h>
+#include <uORB/topics/position_setpoint_triplet.h>
 
 static bool thread_should_exit = false;     /**< daemon exit flag */
 static bool thread_running = false;     /**< daemon status flag */
@@ -154,7 +155,7 @@ int get_gps_data_main(int argc, char *argv[])
 
 int get_data_thread_main(int argc, char *argv[])
 {
-    
+
     warnx("[daemon] starting\n");
 
     thread_running = true;
@@ -189,6 +190,9 @@ int get_data_thread_main(int argc, char *argv[])
     struct vehicle_local_position_s local_now = {};
     struct home_position_s _home_position = {};
     struct offboard_setpoint_s _offboard_sp = {};
+    struct position_setpoint_triplet_s _pos_sp_triplet = {};
+
+
 
 //    struct vehicle_global_position_s global_a = {};
 //    struct vehicle_global_position_s global_b = {};
@@ -498,8 +502,13 @@ int get_data_thread_main(int argc, char *argv[])
                 if (local_now.z < (local_a.z + set_high + (float)0.5)) {
                     token = 10;//10悬停5s
                 }
-                printf("A take off\n");
-		printf("A-channel8:%6.3f",(double)_rc_channels.channels[7]);
+                count_drop++;
+                if(count_drop>10){
+                    count_drop = 0;
+                    printf("current-z:%6.3f",(double)_pos_sp_triplet.current.z);
+                }
+                //printf("A take off\n");
+                //printf("A-channel8:%6.3f",(double)_rc_channels.channels[7]);
                 break;
             case 2:     //飞向B点
                 _offboard_sp.ignore_alt_hold = false;
@@ -512,7 +521,7 @@ int get_data_thread_main(int argc, char *argv[])
                 if (close_b && is_vxy_zero) {
                     token = 12;//上升2米
                 }
-                printf("TO B\n");
+                //printf("TO B\n");
                 break;
 
             case 3:     //B点投放，下一步飞往C点
@@ -524,7 +533,7 @@ int get_data_thread_main(int argc, char *argv[])
                     count_drop = 0;
                     token = 4;
                 }
-                printf("Drop B\n");
+                //printf("Drop B\n");
                 break;
 
             case 4:     //飞向C点
@@ -538,7 +547,7 @@ int get_data_thread_main(int argc, char *argv[])
                 if ( close_c && is_vxy_zero) {
                     token = 5;
                 }
-                printf("TO C\n");
+                //printf("TO C\n");
                 break;
 
             case 5:     //C点降落
@@ -552,8 +561,8 @@ int get_data_thread_main(int argc, char *argv[])
                 if ((local_now.z > (local_c.z - (float32)2.0)) && is_vz_zero) {
                         token = 6;
                 }
-                printf("Land C\n");
-                printf("token=  %4d\n",token);
+                //printf("Land C\n");
+                //printf("token=  %4d\n",token);
                 break;
 
             case 6:     //C点悬停投放，下一步C点起飞
@@ -573,7 +582,7 @@ int get_data_thread_main(int argc, char *argv[])
                     count_drop = 0;
                     token = 7;
                 }
-                printf("Drop C\n");
+                //printf("Drop C\n");
                 break;
 
             case 7:     //C点起飞
@@ -586,9 +595,9 @@ int get_data_thread_main(int argc, char *argv[])
                 _offboard_sp.z = set_high;//local_a.z +
                 if (local_now.z < (local_a.z + set_high + (float)0.5)) {
                     token = 11;
-		    printf("to A a-z:%6.3f",(double)local_c.z);
+                //printf("to A a-z:%6.3f",(double)local_c.z);
                 }
-                printf("C take off\n");
+                //printf("C take off\n");
                 break;
 
             case 8:     //飞向A点
@@ -602,7 +611,7 @@ int get_data_thread_main(int argc, char *argv[])
                 if ( close_a && is_vxy_zero) {
                     token = 9;
                 }
-                printf("To A\n");
+                //printf("To A\n");
                 break;
 
             case 9:     //A点降落
@@ -658,8 +667,8 @@ int get_data_thread_main(int argc, char *argv[])
                if (local_now.z < (local_a.z + set_high + clim_high)) {
                     token = 13;
                 }
-                printf("Loiter B\n");
-                printf("token=  %4d\n",token);
+                //printf("Loiter B\n");
+                //printf("token=  %4d\n",token);
                 break;
             case 13:    //B上升后悬停5s,下一步开始投放
                 _offboard_sp.ignore_alt_hold = true;
@@ -674,7 +683,7 @@ int get_data_thread_main(int argc, char *argv[])
                     count_drop = 0;
                     token = 3;
                 }
-                printf("Loiter B\n");
+                //printf("Loiter B\n");
                 break;
  	    
             default:
@@ -700,3 +709,4 @@ int get_data_thread_main(int argc, char *argv[])
 
     return 0;
 }
+
