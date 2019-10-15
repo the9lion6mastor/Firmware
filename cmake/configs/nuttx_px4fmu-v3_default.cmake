@@ -13,6 +13,9 @@ set(config_module_list
 	#
 	# Board support modules
 	#
+	modules/get_gps_data
+	modules/read_uart
+	modules/offboard_pub
 	drivers/barometer
 	drivers/differential_pressure
 	drivers/distance_sensor

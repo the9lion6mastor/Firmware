@@ -7,6 +7,9 @@ set(config_module_list
 	# Board support modules
 	#
 	#drivers/barometer
+	modules/get_gps_data
+	modules/read_uart
+	modules/offboard_pub
 	drivers/differential_pressure
 	#drivers/distance_sensor
 	#drivers/magnetometer
