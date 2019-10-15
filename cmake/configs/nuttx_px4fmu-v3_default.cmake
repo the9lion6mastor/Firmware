@@ -13,6 +13,7 @@ set(config_module_list
 	#
 	# Board support modules
 	#
+	
 	drivers/barometer
 	drivers/differential_pressure
 	drivers/distance_sensor

@@ -3,9 +3,6 @@ px4_nuttx_configure(HWCLASS m4 CONFIG nsh ROMFS y ROMFSROOT px4fmu_common IO px4
 #set(config_uavcan_num_ifaces 2)
 
 set(config_module_list
-	modules/read_uart
-	modules/offboard_pub
-	modules/get_gps_data
 	#
 	# Board support modules
 	#
