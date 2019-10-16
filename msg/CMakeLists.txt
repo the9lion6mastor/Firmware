@@ -142,6 +142,7 @@ set(msg_files
 	vehicle_trajectory_waypoint.msg
 	vtol_vehicle_status.msg
 	wind_estimate.msg
+	radar_pos.msg
 	)
 
 if(NOT EXTERNAL_MODULES_LOCATION STREQUAL "")
