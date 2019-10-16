@@ -209,6 +209,7 @@ int get_data_thread_main(int argc, char *argv[])
     float32 vz = 0.0;
     float32 vxy_max = 0.0;
     float32 set_high = -7.0;
+    float32 clim_high = -2.0;
 //    float32 set_threshold_up = -6.5;
 //    float32 set_threshold_down = -2.0;
 
@@ -510,7 +511,7 @@ int get_data_thread_main(int argc, char *argv[])
                 _offboard_sp.y = local_b.y;
                 _offboard_sp.z = local_a.z + set_high;
                 if ( close_b && is_vxy_zero) {
-                    token = 3;
+                    token = 12;//3
                 }
                 printf("TO B\n");
                 break;
@@ -534,7 +535,7 @@ int get_data_thread_main(int argc, char *argv[])
                 _offboard_sp.is_takeoff_sp = false;
                 _offboard_sp.x = local_c.x;
                 _offboard_sp.y = local_c.y;
-                _offboard_sp.z = local_a.z + set_high;
+                _offboard_sp.z = local_a.z + set_high + clim_high;
                 if ( close_c && is_vxy_zero) {
                     token = 5;
                 }
@@ -638,7 +639,35 @@ int get_data_thread_main(int argc, char *argv[])
                 }
                 printf("Loiter C\n");
                 break;
-
+	    case 12:     //B点上升2米,下一步悬停
+                _offboard_sp.ignore_alt_hold = true;
+                _offboard_sp.ignore_position = false;
+                _offboard_sp.is_land_sp = false;
+                _offboard_sp.is_takeoff_sp = true;//上升时候要true
+                _offboard_sp.x = local_b.x;
+                _offboard_sp.y = local_b.y;
+                _offboard_sp.z = local_a.z +set_high +clim_high;
+               if (local_now.z < (local_a.z + set_high + clim_high)) {
+                    token = 13;
+                }
+                printf("B up 2m\n");
+                printf("token=  %4d\n",token);
+                break;
+            case 13:    //B上升后悬停5s,下一步开始投放
+                _offboard_sp.ignore_alt_hold = true;
+                _offboard_sp.ignore_position = false;
+                _offboard_sp.is_land_sp = false;
+                _offboard_sp.is_takeoff_sp = false;
+                _offboard_sp.x = local_b.x;
+                _offboard_sp.y = local_b.y;
+                _offboard_sp.z = local_a.z + set_high + clim_high;
+                count_drop++;
+                if (count_drop > 5) {
+                    count_drop = 0;
+                    token = 3;
+                }
+                printf("Loiter B\n");
+                break;
             default:
                 break;
             }
