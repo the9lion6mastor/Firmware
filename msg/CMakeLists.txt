@@ -143,6 +143,11 @@ set(msg_files
 	vehicle_trajectory_waypoint.msg
 	vtol_vehicle_status.msg
 	wind_estimate.msg
+	read_uart.msg
+	delivery_signal.msg
+	offboard_setpoint.msg
+	offboard_control_mode.msg
+
 	)
 
 if(NOT EXTERNAL_MODULES_LOCATION STREQUAL "")

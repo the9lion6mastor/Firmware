@@ -29,7 +29,7 @@ px4_add_board(
 		differential_pressure/ms4525
 		#distance_sensor # all available distance sensor drivers
 		distance_sensor/ll40ls
-		#distance_sensor/sf0x
+		distance_sensor/sf0x
 		gps
 		#heater
 		#imu/adis16448
@@ -87,7 +87,11 @@ px4_add_board(
 		vmount
 		vtol_att_control
 		#wind_estimator
-
+		read_uart
+		offboard_pub
+		#get_gps_data
+		setpoint_term3
+	
 	SYSTEMCMDS
 		bl_update
 		#config

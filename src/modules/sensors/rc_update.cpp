@@ -48,6 +48,7 @@
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/input_rc.h>
 
+
 using namespace sensors;
 
 RCUpdate::RCUpdate(const Parameters &parameters)
@@ -66,6 +67,7 @@ int RCUpdate::init()
 {
 	_rc_sub = orb_subscribe(ORB_ID(input_rc));
 
+
 	if (_rc_sub < 0) {
 		return -errno;
 	}
@@ -75,6 +77,29 @@ int RCUpdate::init()
 	if (_rc_parameter_map_sub < 0) {
 		return -errno;
 	}
+    //step 2
+    struct delivery_signal_s _ds = {};
+
+    _ds.is_point_b = false;
+    _ds.is_point_c = false;
+
+    orb_advert_t delivery_signal_pub = orb_advertise(ORB_ID(delivery_signal), &_ds);
+
+    orb_publish(ORB_ID(delivery_signal), delivery_signal_pub, &_ds);
+
+    delivery_signal_sub = orb_subscribe(ORB_ID(delivery_signal));
+
+    struct offboard_setpoint_s _offsp = {};
+    //offboard
+    _offsp.x = (float)0.0;
+    _offsp.y = (float)0.0;
+    _offsp.z = (float)0.3;
+
+    orb_advert_t off_pub = orb_advertise(ORB_ID(offboard_setpoint), &_offsp);
+
+    orb_publish(ORB_ID(offboard_setpoint), off_pub, &_offsp);
+
+    offboard_sp_sub = orb_subscribe(ORB_ID(offboard_setpoint));
 
 	return 0;
 }
@@ -114,7 +139,6 @@ void RCUpdate::update_rc_functions()
 	_rc.function[rc_channels_s::RC_CHANNELS_FUNCTION_AUX_3] = _parameters.rc_map_aux3 - 1;
 	_rc.function[rc_channels_s::RC_CHANNELS_FUNCTION_AUX_4] = _parameters.rc_map_aux4 - 1;
 	_rc.function[rc_channels_s::RC_CHANNELS_FUNCTION_AUX_5] = _parameters.rc_map_aux5 - 1;
-	_rc.function[rc_channels_s::RC_CHANNELS_FUNCTION_AUX_6] = _parameters.rc_map_aux6 - 1;
 
 	for (int i = 0; i < rc_parameter_map_s::RC_PARAM_MAP_NCHAN; i++) {
 		_rc.function[rc_channels_s::RC_CHANNELS_FUNCTION_PARAM_1 + i] = _parameters.rc_map_param[i] - 1;
@@ -339,6 +363,39 @@ RCUpdate::rc_poll(const ParameterHandles &parameter_handles)
 				/* in the configured dead zone, output zero */
 				_rc.channels[i] = 0.0f;
 			}
+            //step 4    0.9/0.35/-0.6      /-0.998/-0.2953/0.0815
+            orb_copy(ORB_ID(delivery_signal), delivery_signal_sub, &_delivery_signal);
+//            if (_delivery_signal.is_point_b == false && _delivery_signal.is_point_c == false)
+//                _rc.channels[7] = (float32)-0.998;
+//            if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == false)
+//                _rc.channels[7] = (float32)-0.35;
+//            if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == true)
+//                _rc.channels[7] = (float32)0.9;
+//            if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == true)
+//                _rc.channels[7] = _rc.channels[7];
+
+            orb_copy(ORB_ID(offboard_setpoint), offboard_sp_sub, &_offboard_sp);
+
+            if (_rc.channels[5] > (float)-0.5) {
+
+                _rc.channels[2] = _offboard_sp.z;
+
+                if (_rc.channels[5] > (float)0.5) {
+                    _rc.channels[1] = _offboard_sp.x;
+                    _rc.channels[0] = _offboard_sp.y;
+                }
+            }
+
+// ge
+/*            if (_rc.channels[4] < (float)0.0) {
+
+                _rc.channels[2] = _offboard_sp.z;
+
+                if (_rc.channels[4] < (float)-0.35) {
+                    _rc.channels[1] = _offboard_sp.x;
+                    _rc.channels[0] = _offboard_sp.y;
+                }
+            }                                        */
 
 			_rc.channels[i] *= _parameters.rev[i];
 
@@ -380,7 +437,6 @@ RCUpdate::rc_poll(const ParameterHandles &parameter_handles)
 			manual.aux3 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_3, -1.0, 1.0);
 			manual.aux4 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_4, -1.0, 1.0);
 			manual.aux5 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_5, -1.0, 1.0);
-			manual.aux6 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_6, -1.0, 1.0);
 
 			/* filter controls */
 			manual.y = math::constrain(_filter_roll.apply(manual.y), -1.f, 1.f);
