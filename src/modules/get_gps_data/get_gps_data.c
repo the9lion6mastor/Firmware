@@ -42,40 +42,19 @@ struct ref_point {
     double sin_lat;
     double cos_lat;
 };
+struct offboard_setpoint_s _offboard_sp = {};
+struct radar_pos_s _radar_pos = {};
+float32 set_high = -1.35;
+bool token = true;
+bool close_point[10] = { 0 };//初始化为false
 
 __EXPORT int get_gps_data_main(int argc, char *argv[]);
 
 int get_data_thread_main(int argc, char *argv[]);
 
-//static int wgs_ned(const struct ref_point *ref, double lat, double lon, float *x, float *y);
-
 static void usage(const char *reason);
 
-//int wgs_ned(const struct ref_point *ref, double lat, double lon, float *x, float *y)
-//{
-//    const double lat_rad = lat * (pi / 180);
-//    const double lon_rad = lon * (pi / 180);
-
-//    const double sin_lat = sin(lat_rad);
-//    const double cos_lat = cos(lat_rad);
-
-//    const double cos_d_lon = cos(lon_rad - ref->lon_rad);
-
-//    int val = ref->sin_lat * sin_lat + ref->cos_lat * cos_lat * cos_d_lon;
-//    const double arg = (val < -1.0) ? -1.0 : ((val > 1.0) ? 1.0 : val);
-//    const double c = acos(arg);
-
-//    double k = 1.0;
-
-//    if (fabs(c) > 0) {
-//        k = (c / sin(c));
-//    }
-
-//    *x = (float32)(k * (ref->cos_lat * sin_lat - ref->sin_lat * cos_lat * cos_d_lon) * CONSTANTS_RADIUS_OF_EARTH);
-//    *y = (float32)(k * cos_lat * sin(lon_rad - ref->lon_rad) * CONSTANTS_RADIUS_OF_EARTH);
-
-//    return 0;
-//}
+void flightTo(int i);
 
 static void usage(const char *reason)
 {
@@ -140,7 +119,7 @@ int get_data_thread_main(int argc, char *argv[])
 
     thread_running = true;
 
-    bool close_1 = false;
+
 //    bool close_b = false;
 //    bool close_c = false;
 //    bool is_vxy_zero = false;
@@ -148,7 +127,7 @@ int get_data_thread_main(int argc, char *argv[])
 //    int count = 0;
     int count_time = 0;
 //    int count_drop = 0;
-    int token = 1;
+
     double sum_square = 0.0;
 
     int rc_channels_sub = orb_subscribe(ORB_ID(rc_channels));
@@ -156,19 +135,8 @@ int get_data_thread_main(int argc, char *argv[])
     int radar_pos_sub = orb_subscribe(ORB_ID(radar_pos));
 
     struct rc_channels_s _rc_channels = {};
-    struct delivery_signal_s _delivery_signal = {};
     struct home_position_s _home_position = {};
-    struct offboard_setpoint_s _offboard_sp = {};
-    struct radar_pos_s _radar_pos = {};
 
-    float32 set_high = -7.0;
-//    float32 set_threshold_up = -6.5;
-//    float32 set_threshold_down = -2.0;
-
-//    struct ref_point ref_a = {};
-
-    _delivery_signal.is_point_b = false;
-    _delivery_signal.is_point_c = false;
     _offboard_sp.ignore_alt_hold = true;
     _offboard_sp.ignore_attitude = true;
     _offboard_sp.ignore_position = true;
@@ -180,110 +148,66 @@ int get_data_thread_main(int argc, char *argv[])
     _offboard_sp.is_takeoff_sp = false;
     _offboard_sp.timestamp = hrt_absolute_time();
 
-    orb_advert_t delivery_signal_pub = orb_advertise(ORB_ID(delivery_signal), &_delivery_signal);
     orb_advert_t offboard_setpoint_pub = orb_advertise(ORB_ID(offboard_setpoint), &_offboard_sp);
     orb_advert_t radar_pos_pub = orb_advertise(ORB_ID(radar_pos), &_radar_pos);
 
     orb_publish(ORB_ID(offboard_setpoint), offboard_setpoint_pub, &_offboard_sp);
-    orb_publish(ORB_ID(delivery_signal), delivery_signal_pub, &_delivery_signal);
+
     orb_publish(ORB_ID(radar_pos), radar_pos_pub, &_radar_pos);//get target point data
 
     while (!thread_should_exit) {
 
-        bool updated_rcch;
-        bool updated_vp_local;
-        bool updated_home;
+	bool updated_rcch;
+	bool updated_vp_local;
+	bool updated_home;
 
-        orb_check(rc_channels_sub, &updated_rcch);
-        orb_check(home_position_sub, &updated_home);
+	orb_check(rc_channels_sub, &updated_rcch);
+	orb_check(home_position_sub, &updated_home);
 	orb_check(radar_pos_sub, &updated_vp_local);
-	
-
-        if (updated_rcch) {
-            orb_copy(ORB_ID(rc_channels), rc_channels_sub, &_rc_channels);
-            printf("channel 1 = %8.4f\n", (double)_rc_channels.channels[0]);
-            printf("channel 2 = %8.4f\n", (double)_rc_channels.channels[1]);
-            printf("channel 3 = %8.4f\n", (double)_rc_channels.channels[2]);
-            printf("channel 4 = %8.4f\n", (double)_rc_channels.channels[3]);
-            printf("channel 5 = %8.4f\n", (double)_rc_channels.channels[4]);
-            printf("channel 6 = %8.4f\n", (double)_rc_channels.channels[7]);
-        }
 
 
+	if (updated_rcch) {
+	    orb_copy(ORB_ID(rc_channels), rc_channels_sub, &_rc_channels);
+	    printf("channel 1 = %8.4f\n", (double)_rc_channels.channels[0]);
+	    printf("channel 2 = %8.4f\n", (double)_rc_channels.channels[1]);
+	    printf("channel 3 = %8.4f\n", (double)_rc_channels.channels[2]);
+	    printf("channel 4 = %8.4f\n", (double)_rc_channels.channels[3]);
+	    printf("channel 5 = %8.4f\n", (double)_rc_channels.channels[4]);
+	    printf("channel 6 = %8.4f\n", (double)_rc_channels.channels[7]);
 
-        if (updated_home) {
-            orb_copy(ORB_ID(home_position), home_position_sub, &_home_position);
-        }
+	}
 
-        if (updated_vp_local) {
+	if (updated_home) {
+	    orb_copy(ORB_ID(home_position), home_position_sub, &_home_position);
+	}
+
+	if (updated_vp_local) {
 		orb_copy(ORB_ID(radar_pos), radar_pos_sub, &_radar_pos);
 
 		    //显示abc点的NED坐标
-		printf("  1:  x=%6.3f\t", (double)_radar_pos.point_datax_1);
-		printf("y=%6.3f\t", (double)_radar_pos.point_datay_1);
-
-		printf("  2:  x=%6.3f\t", (double)_radar_pos.point_datax_2);
-		printf("y=%6.3f\t", (double)_radar_pos.point_datay_2);
-
-		printf("  3:  x=%6.3f\t", (double)_radar_pos.point_datax_3);
-		printf("y=%6.3f\t", (double)_radar_pos.point_datay_3);
-
-
+		for(int i = 0;i<10;i++){
+			printf("  %d:  x=%6.3f\t",i, (double)_radar_pos.point_datax[i]);
+			printf("y=%6.3f\t", (double)_radar_pos.point_datay[i]);
+	    		sum_square = (double)( (_radar_pos.point_datax[i] - _radar_pos.local_datax) * (_radar_pos.point_datax[i] - _radar_pos.local_datax) + (_radar_pos.point_datay[i] - _radar_pos.local_datay) * (_radar_pos.point_datay[i] - _radar_pos.local_datay) );
+			if (sum_square < 1.0) {
+			    close_point[i] = true;
+			    printf("close_point%d \t",i);
+		   	} 
+		}
 
 		printf("now:  x=%6.3f\t", (double)_radar_pos.local_datax);
 		printf("y=%6.3f\t", (double)_radar_pos.local_datay);
 		count_time = 0;
 
 		printf("count_time= %6d\n",count_time);
-
-		sum_square = (double)( (_radar_pos.point_datax_1 - _radar_pos.local_datax) * (_radar_pos.point_datax_1 - _radar_pos.local_datax) +
-				   (_radar_pos.point_datay_1 - _radar_pos.local_datay) * (_radar_pos.point_datay_1 - _radar_pos.local_datay) );
-		if (sum_square < 1.0) {
-		close_1 = true;
-		printf("close_1\t");
+		int j = 0;
+		if(token){
+			flightTo(j);
+			j++;	
 		}
-
-		sum_square = (double)( (_radar_pos.point_datax_2 - _radar_pos.local_datax) * (_radar_pos.point_datax_2 - _radar_pos.local_datax) +
-				   (_radar_pos.point_datay_2 - _radar_pos.local_datay) * (_radar_pos.point_datay_2 - _radar_pos.local_datay) );
-		if (sum_square < 1.0) {
-		//close_b = true;
-		printf("close_2\t");
-		}
-
-		sum_square = (double)( (_radar_pos.point_datax_3 - _radar_pos.local_datax) * (_radar_pos.point_datax_3 - _radar_pos.local_datax) +
-				   (_radar_pos.point_datay_3 - _radar_pos.local_datay) * (_radar_pos.point_datay_3 - _radar_pos.local_datay) );
-		if (sum_square < 1.0) {
-		//close_c = true;
-		printf("close_3\t");
-		}
-
-
-		switch (token) {
-		case 1:
-		        _offboard_sp.ignore_alt_hold = false;
-		        _offboard_sp.ignore_position = false;
-		        _offboard_sp.is_land_sp = false;
-		        _offboard_sp.is_takeoff_sp = false;
-		        _offboard_sp.x = _radar_pos.point_datax_1;
-		        _offboard_sp.y = _radar_pos.point_datay_1;
-		        _offboard_sp.z = set_high;
-		        if (close_1) {
-		            token = 12;
-		        }
-			break;
-
-		default:
-			break;
-		}
-		close_1 = false;
-		//close_b = false;
-		//close_c = false;
-		//is_vxy_zero = false;
-
     	}
 
         _offboard_sp.timestamp = hrt_absolute_time();
-        orb_publish(ORB_ID(delivery_signal), delivery_signal_pub, &_delivery_signal);
         orb_publish(ORB_ID(offboard_setpoint), offboard_setpoint_pub, &_offboard_sp);
         usleep(100000);
     }
@@ -293,4 +217,19 @@ int get_data_thread_main(int argc, char *argv[])
     thread_running = false;
 
     return 0;
+}
+
+void flightTo(int i){
+	_offboard_sp.ignore_alt_hold = false;
+        _offboard_sp.ignore_position = false;
+        _offboard_sp.is_land_sp = false;
+        _offboard_sp.is_takeoff_sp = false;
+        _offboard_sp.x = _radar_pos.point_datax[i];
+        _offboard_sp.y = _radar_pos.point_datay[i];
+        _offboard_sp.z = set_high;
+	if(close_point[i]){
+		token = true;
+	}else{
+		token = false;
+	}
 }

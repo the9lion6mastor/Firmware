@@ -649,6 +649,7 @@ void Logger::add_default_topics()
 	add_topic("vehicle_vision_position");
 	add_topic("vtol_vehicle_status", 200);
 	add_topic("wind_estimate", 200);
+	add_topic("radar_pos",100);
 
 #ifdef CONFIG_ARCH_BOARD_SITL
 	add_topic("actuator_armed");
