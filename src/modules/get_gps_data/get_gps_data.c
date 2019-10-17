@@ -639,7 +639,7 @@ int get_data_thread_main(int argc, char *argv[])
                 }
                 printf("Loiter C\n");
                 break;
-	    case 12:     //B点上升2米,下一步悬停
+	    case 12:     //B点上升2米
                 _offboard_sp.ignore_alt_hold = true;
                 _offboard_sp.ignore_position = false;
                 _offboard_sp.is_land_sp = false;
