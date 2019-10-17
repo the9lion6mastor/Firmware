@@ -204,6 +204,7 @@ int get_data_thread_main(int argc, char *argv[])
 		if(token){
 			flightTo(j);
 			j++;	
+			printf("Flight to %d\n\t",j);
 		}
     	}
 
