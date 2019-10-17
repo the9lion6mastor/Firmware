@@ -366,9 +366,9 @@ RCUpdate::rc_poll(const ParameterHandles &parameter_handles)
             //step 4    0.9/0.35/-0.6      /-0.998/-0.2953/0.0815
             orb_copy(ORB_ID(delivery_signal), delivery_signal_sub, &_delivery_signal);
             if (_delivery_signal.is_point_b == false && _delivery_signal.is_point_c == false)
-                _rc.channels[7] = (float32)-0.998;
+                _rc.channels[7] = (float32)-0.7;
             if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == false)
-                _rc.channels[7] = (float32)-0.35;
+                _rc.channels[7] = (float32)0.35;
             if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == true)
                 _rc.channels[7] = (float32)0.9;
             if (_delivery_signal.is_point_b == true && _delivery_signal.is_point_c == true)

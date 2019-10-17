@@ -183,9 +183,14 @@ int get_data_thread_main(int argc, char *argv[])
 
 	if (updated_vp_local) {
 		orb_copy(ORB_ID(radar_pos), radar_pos_sub, &_radar_pos);
-
+		_radar_pos.local_datay = 0;
+		_radar_pos.local_datax = 0;
+		for(int i = 0;i<9;i++){
+			_radar_pos.point_datax[i] = 0;
+			_radar_pos.point_datay[i] = 0;
+		}
 		    //显示abc点的NED坐标
-		for(int i = 0;i<10;i++){
+		for(int i = 0;i<9;i++){
 			printf("  %d:  x=%6.3f\t",i, (double)_radar_pos.point_datax[i]);
 			printf("y=%6.3f\t", (double)_radar_pos.point_datay[i]);
 	    		sum_square = (double)( (_radar_pos.point_datax[i] - _radar_pos.local_datax) * (_radar_pos.point_datax[i] - _radar_pos.local_datax) + (_radar_pos.point_datay[i] - _radar_pos.local_datay) * (_radar_pos.point_datay[i] - _radar_pos.local_datay) );
