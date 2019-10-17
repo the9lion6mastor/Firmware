@@ -160,7 +160,7 @@ int offboard_pub_thread_main(int argc, char *argv[])
             _pos_sp_triplet.previous.valid = false;
             _pos_sp_triplet.next.valid = false;
             _pos_sp_triplet.current.valid = true;
-
+	    printf("offboard open!!!");
 
             bool is_takeoff_sp = _offboard_sp.is_takeoff_sp;
             bool is_land_sp = _offboard_sp.is_land_sp;

@@ -127,7 +127,7 @@ set(config_module_list
 	modules/setpoint_term3
 	modules/offboard_pub
 	modules/avoidance
-	modules/read_point
+	#modules/read_point
 
 	#
 	# Logging

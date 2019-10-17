@@ -28,6 +28,7 @@
 #include <uORB/topics/offboard_setpoint.h>
 #include <uORB/topics/home_position.h>
 #include <uORB/topics/radar_pos.h>
+#include <uORB/topics/vehicle_local_position.h>
 
 static bool thread_should_exit = false;     /**< daemon exit flag */
 static bool thread_running = false;     /**< daemon status flag */
@@ -42,11 +43,16 @@ struct ref_point {
     double sin_lat;
     double cos_lat;
 };
+
 struct offboard_setpoint_s _offboard_sp = {};
 struct radar_pos_s _radar_pos = {};
-float32 set_high = -1.35;
+struct vehicle_local_position_s local_now = {};
+float32 set_high = -0.6;
+
 bool token = true;
+bool get_now_z = false;
 bool close_point[10] = { 0 };//初始化为false
+	
 
 __EXPORT int get_gps_data_main(int argc, char *argv[]);
 
@@ -124,18 +130,20 @@ int get_data_thread_main(int argc, char *argv[])
 //    bool close_c = false;
 //    bool is_vxy_zero = false;
 
-//    int count = 0;
+    int count = 0;
     int count_time = 0;
 //    int count_drop = 0;
 
     double sum_square = 0.0;
-
+    float32 sum_z = 0.0;
     int rc_channels_sub = orb_subscribe(ORB_ID(rc_channels));
     int home_position_sub = orb_subscribe(ORB_ID(home_position));
     int radar_pos_sub = orb_subscribe(ORB_ID(radar_pos));
+    int vehicle_local_position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
 
     struct rc_channels_s _rc_channels = {};
     struct home_position_s _home_position = {};
+
 
     _offboard_sp.ignore_alt_hold = true;
     _offboard_sp.ignore_attitude = true;
@@ -160,20 +168,34 @@ int get_data_thread_main(int argc, char *argv[])
 	bool updated_rcch;
 	bool updated_vp_local;
 	bool updated_home;
+	bool updated_local_z;
 
 	orb_check(rc_channels_sub, &updated_rcch);
 	orb_check(home_position_sub, &updated_home);
 	orb_check(radar_pos_sub, &updated_vp_local);
+	orb_check(vehicle_local_position_sub, &updated_local_z);
+
+	if(updated_local_z && !get_now_z){
+		orb_copy(ORB_ID(vehicle_local_position), vehicle_local_position_sub, &local_now);
+		count++;
+		if (count == 10) {
+		    local_now.z = sum_z/count;
+		    get_now_z = true;
+		    printf("local_now_z:%6.3f",(double)local_now.z);
+		    count = 0;
+		    sum_z = 0.0;
+		}
+	}
 
 
 	if (updated_rcch) {
 	    orb_copy(ORB_ID(rc_channels), rc_channels_sub, &_rc_channels);
-	    printf("channel 1 = %8.4f\n", (double)_rc_channels.channels[0]);
-	    printf("channel 2 = %8.4f\n", (double)_rc_channels.channels[1]);
-	    printf("channel 3 = %8.4f\n", (double)_rc_channels.channels[2]);
-	    printf("channel 4 = %8.4f\n", (double)_rc_channels.channels[3]);
-	    printf("channel 5 = %8.4f\n", (double)_rc_channels.channels[4]);
-	    printf("channel 6 = %8.4f\n", (double)_rc_channels.channels[7]);
+	    //printf("channel 1 = %8.4f\n", (double)_rc_channels.channels[0]);
+	    //printf("channel 2 = %8.4f\n", (double)_rc_channels.channels[1]);
+	    //printf("channel 3 = %8.4f\n", (double)_rc_channels.channels[2]);
+	    //printf("channel 4 = %8.4f\n", (double)_rc_channels.channels[3]);
+	    //printf("channel 5 = %8.4f\n", (double)_rc_channels.channels[4]);
+	    //printf("channel 6 = %8.4f\n", (double)_rc_channels.channels[7]);
 
 	}
 
@@ -189,6 +211,7 @@ int get_data_thread_main(int argc, char *argv[])
 			_radar_pos.point_datax[i] = 0;
 			_radar_pos.point_datay[i] = 0;
 		}
+
 		    //显示abc点的NED坐标
 		for(int i = 0;i<9;i++){
 			printf("  %d:  x=%6.3f\t",i, (double)_radar_pos.point_datax[i]);
@@ -214,7 +237,9 @@ int get_data_thread_main(int argc, char *argv[])
     	}
 
         _offboard_sp.timestamp = hrt_absolute_time();
+	_radar_pos.timestamp = hrt_absolute_time();
         orb_publish(ORB_ID(offboard_setpoint), offboard_setpoint_pub, &_offboard_sp);
+	orb_publish(ORB_ID(radar_pos), radar_pos_pub, &_radar_pos);
         usleep(100000);
     }
 
@@ -226,13 +251,18 @@ int get_data_thread_main(int argc, char *argv[])
 }
 
 void flightTo(int i){
-	_offboard_sp.ignore_alt_hold = false;
+	_offboard_sp.ignore_alt_hold = true;
+        _offboard_sp.ignore_attitude = true;
         _offboard_sp.ignore_position = false;
+        _offboard_sp.ignore_velocity = true;
+        _offboard_sp.is_idle_sp = false;
         _offboard_sp.is_land_sp = false;
-        _offboard_sp.is_takeoff_sp = false;
+        _offboard_sp.is_local_frame = true;
+        _offboard_sp.is_loiter_sp = false;
+        _offboard_sp.is_takeoff_sp = true;
         _offboard_sp.x = _radar_pos.point_datax[i];
         _offboard_sp.y = _radar_pos.point_datay[i];
-        _offboard_sp.z = set_high;
+        _offboard_sp.z = local_now.z + set_high;
 	if(close_point[i]){
 		token = true;
 	}else{
