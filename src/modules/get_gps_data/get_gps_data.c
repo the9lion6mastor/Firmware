@@ -248,12 +248,12 @@ int get_data_thread_main(int argc, char *argv[])
 
         if (updated_rcch) {
             orb_copy(ORB_ID(rc_channels), rc_channels_sub, &_rc_channels);
-            printf("channel 1 = %8.4f\n", (double)_rc_channels.channels[0]);
-            printf("channel 2 = %8.4f\n", (double)_rc_channels.channels[1]);
-            printf("channel 3 = %8.4f\n", (double)_rc_channels.channels[2]);
-            printf("channel 4 = %8.4f\n", (double)_rc_channels.channels[3]);
-            printf("channel 5 = %8.4f\n", (double)_rc_channels.channels[4]);
-            printf("channel 6 = %8.4f\n", (double)_rc_channels.channels[7]);
+            //printf("channel 1 = %8.4f\n", (double)_rc_channels.channels[0]);
+            //printf("channel 2 = %8.4f\n", (double)_rc_channels.channels[1]);
+            //printf("channel 3 = %8.4f\n", (double)_rc_channels.channels[2]);
+            //printf("channel 4 = %8.4f\n", (double)_rc_channels.channels[3]);
+            //printf("channel 5 = %8.4f\n", (double)_rc_channels.channels[4]);
+            //printf("channel 6 = %8.4f\n", (double)_rc_channels.channels[7]);
         }
 
         if (updated_vp_local) {
@@ -507,6 +507,7 @@ int get_data_thread_main(int argc, char *argv[])
                 _offboard_sp.ignore_position = false;
                 _offboard_sp.is_land_sp = false;
                 _offboard_sp.is_takeoff_sp = false;
+		_offboard_sp.is_loiter_sp = false;
                 _offboard_sp.x = local_b.x;
                 _offboard_sp.y = local_b.y;
                 _offboard_sp.z = local_a.z + set_high;
@@ -517,6 +518,14 @@ int get_data_thread_main(int argc, char *argv[])
                 break;
 
             case 3:     //B点投放
+                _offboard_sp.ignore_alt_hold = false;//true
+                _offboard_sp.ignore_position = false;
+                _offboard_sp.is_land_sp = false;
+                _offboard_sp.is_takeoff_sp = false;
+		_offboard_sp.is_loiter_sp = true;
+                _offboard_sp.x = local_b.x;
+                _offboard_sp.y = local_b.y;
+                _offboard_sp.z = local_a.z + set_high + clim_high;
                 count_drop++;
                 if (count_drop > 30) {
                     _delivery_signal.is_point_b = true;
@@ -533,6 +542,7 @@ int get_data_thread_main(int argc, char *argv[])
                 _offboard_sp.ignore_position = false;
                 _offboard_sp.is_land_sp = false;
                 _offboard_sp.is_takeoff_sp = false;
+		_offboard_sp.is_loiter_sp = false;
                 _offboard_sp.x = local_c.x;
                 _offboard_sp.y = local_c.y;
                 _offboard_sp.z = local_a.z + set_high + clim_high;
@@ -588,6 +598,7 @@ int get_data_thread_main(int argc, char *argv[])
                 _offboard_sp.ignore_position = false;
                 _offboard_sp.is_land_sp = false;
                 _offboard_sp.is_takeoff_sp = false;
+		_offboard_sp.is_loiter_sp = false;
                 _offboard_sp.x = local_a.x;
                 _offboard_sp.y = local_a.y;
                 _offboard_sp.z = local_a.z + set_high;
@@ -609,10 +620,11 @@ int get_data_thread_main(int argc, char *argv[])
                 break;
 
             case 10:    //A起飞后悬停5s,下一步是2
-                _offboard_sp.ignore_alt_hold = true;
+                _offboard_sp.ignore_alt_hold = false;//true
                 _offboard_sp.ignore_position = false;
                 _offboard_sp.is_land_sp = false;
                 _offboard_sp.is_takeoff_sp = false;
+		_offboard_sp.is_loiter_sp = true;
                 _offboard_sp.x = local_a.x;
                 _offboard_sp.y = local_a.y;
                 _offboard_sp.z = local_a.z + set_high;
@@ -625,10 +637,11 @@ int get_data_thread_main(int argc, char *argv[])
                 break;
 
             case 11:    //C起飞后悬停5s,下一步是8
-                _offboard_sp.ignore_alt_hold = true;
+                _offboard_sp.ignore_alt_hold = false;//true
                 _offboard_sp.ignore_position = false;
                 _offboard_sp.is_land_sp = false;
                 _offboard_sp.is_takeoff_sp = false;
+		_offboard_sp.is_loiter_sp = true;
                 _offboard_sp.x = local_c.x;
                 _offboard_sp.y = local_c.y;
                 _offboard_sp.z = local_a.z + set_high;
@@ -647,22 +660,23 @@ int get_data_thread_main(int argc, char *argv[])
                 _offboard_sp.x = local_b.x;
                 _offboard_sp.y = local_b.y;
                 _offboard_sp.z = local_a.z +set_high +clim_high;
-               if (local_now.z < (local_a.z + set_high + clim_high)) {
-                    token = 13;
+               if (local_now.z < (local_a.z + set_high + clim_high + (float)0.1)) {
+                      token = 13;
                 }
                 printf("B up 2m\n");
                 printf("token=  %4d\n",token);
                 break;
             case 13:    //B上升后悬停5s,下一步开始投放
-                _offboard_sp.ignore_alt_hold = true;
+                _offboard_sp.ignore_alt_hold = false;//true
                 _offboard_sp.ignore_position = false;
                 _offboard_sp.is_land_sp = false;
                 _offboard_sp.is_takeoff_sp = false;
+		_offboard_sp.is_loiter_sp = true;
                 _offboard_sp.x = local_b.x;
                 _offboard_sp.y = local_b.y;
                 _offboard_sp.z = local_a.z + set_high + clim_high;
                 count_drop++;
-                if (count_drop > 5) {
+                if (count_drop > 15) {
                     count_drop = 0;
                     token = 3;
                 }
