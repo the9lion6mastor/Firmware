@@ -207,9 +207,12 @@ int read_point_thread_main(int argc, char *argv[])
             }
             strncpy(_point_data.datastr,buffer,4);// 复制字符串Buffer中前４个数字到Datastr中
             _point_data.datax[0] = atoi(_point_data.datastr);//将字符串转换成整形数据
+	    _point_data.is_valid = true;
+            if (_point_data.datax[0] > 999)
+                _point_data.is_valid = false;
             //printf("[Read_point]sensor.data=%d\n",_point_data.datax);
-            orb_publish(ORB_ID(read_point), read_point_pub, &_point_data);
 	    _radar_pos.local_datax = _point_data.datax[0];
+	    printf("[Read_point]point_datax=%d\n",_radar_pos.local_datax);
         }
         if (data == 'Y'){
             for(int i = 0;i <4;++i){
@@ -225,35 +228,77 @@ int read_point_thread_main(int argc, char *argv[])
             _point_data.timestamp = hrt_absolute_time();
             //printf("[Read_point]sensor.data=%d\n",_point_data.datay);
 	    _radar_pos.local_datay = _point_data.datay[0];
+	    printf("[Read_point]point_datay=%d\n",_radar_pos.local_datay);
             orb_publish(ORB_ID(read_point), read_point_pub, &_point_data);
         }
-	for(int j = 1;j<10;j++){
-		if(data == "point_x"){
-			for(int i = 0;i <4;++i){
-				read(point_read,&data,1);
-				buffer[i] = data;
-				data = '0';
-			}
-			strncpy(_point_data.datastr,buffer,4);// 复制字符串Buffer中前４个数字到Datastr中
-			_point_data.datax[j] = atoi(_point_data.datastr);//将字符串转换成整形数据
-			_radar_pos.point_datax[j - 1] = _point_data.datax[j]
-			//printf("[Read_point]sensor.data=%d\n",_point_data.datax);
-			
+	if(data == 'A'){//ascii必须单引号;A-I
+		for(int i = 0;i <4;++i){
+			read(point_read,&data,1);
+			buffer[i] = data;
+			data = '0';
 		}
-		if(data == "point_y"){
-			for(int i = 0;i <4;++i){
-				read(point_read,&data,1);
-				buffer[i] = data;
-				data = '0';
-			}
-			strncpy(_point_data.datastr,buffer,4);// 复制字符串Buffer中前４个数字到Datastr中
-			_point_data.datay[j] = atoi(_point_data.datastr);//将字符串转换成整形数据
-			_radar_pos.point_datay[j - 1] = _point_data.datay[j]
-			//printf("[Read_point]sensor.data=%d\n",_point_data.datax);
-			
-		}
+		strncpy(_point_data.datastr,buffer,4);// 复制字符串Buffer中前４个数字到Datastr中
+		_point_data.datax[1] = atoi(_point_data.datastr);//将字符串转换成整形数据
+		_radar_pos.point_datax[0] = _point_data.datax[1];
+		_point_data.is_valid = true;
+	    	if (_point_data.datax[1] > 999)
+			_point_data.is_valid = false;
+		//printf("[Read_point]sensor.data=%d\n",_point_data.datax);
+		printf("[Read_point]point_datax[%d]=%d\n",1,_radar_pos.point_datax[0]);
+	        _point_data.timestamp = hrt_absolute_time();
+	        orb_publish(ORB_ID(read_point), read_point_pub, &_point_data);
 	}
+	if(data == 'a'){//a-i
+		for(int i = 0;i <4;++i){
+			read(point_read,&data,1);
+			buffer[i] = data;
+			data = '0';
+		}
+		strncpy(_point_data.datastr,buffer,4);// 复制字符串Buffer中前４个数字到Datastr中
+		_point_data.datay[1] = atoi(_point_data.datastr);//将字符串转换成整形数据
+		_radar_pos.point_datay[0] = _point_data.datay[1];
+		_point_data.is_valid = true;
+	        if (_point_data.datay[1] > 999)
+			_point_data.is_valid = false;
+		printf("[Read_point]point_datay[%d]=%d\n",1,_radar_pos.point_datay[0]);
+                _point_data.timestamp = hrt_absolute_time();
+    		orb_publish(ORB_ID(read_point), read_point_pub, &_point_data);
+		
+	}
+	if(data == 'B'){//ascii必须单引号;A-I
+	for(int i = 0;i <4;++i){
+		read(point_read,&data,1);
+		buffer[i] = data;
+		data = '0';
+	}
+	strncpy(_point_data.datastr,buffer,4);// 复制字符串Buffer中前４个数字到Datastr中
+	_point_data.datax[2] = atoi(_point_data.datastr);//将字符串转换成整形数据
+	_radar_pos.point_datax[1] = _point_data.datax[2];
+	_point_data.is_valid = true;
+    	if (_point_data.datax[2] > 999)
+		_point_data.is_valid = false;
+	//printf("[Read_point]sensor.data=%d\n",_point_data.datax);
+	printf("[Read_point]point_datax[%d]=%d\n",2,_radar_pos.point_datax[1]);
+	_point_data.timestamp = hrt_absolute_time();
 	orb_publish(ORB_ID(read_point), read_point_pub, &_point_data);
+}
+if(data == 'b'){//a-i
+	for(int i = 0;i <4;++i){
+		read(point_read,&data,1);
+		buffer[i] = data;
+		data = '0';
+	}
+	strncpy(_point_data.datastr,buffer,4);// 复制字符串Buffer中前４个数字到Datastr中
+	_point_data.datay[2] = atoi(_point_data.datastr);//将字符串转换成整形数据
+	_radar_pos.point_datay[1] = _point_data.datay[2];
+	_point_data.is_valid = true;
+	if (_point_data.datay[2] > 999)
+		_point_data.is_valid = false;
+	printf("[Read_point]point_datay[%d]=%d\n",2,_radar_pos.point_datay[1]);
+	_point_data.timestamp = hrt_absolute_time();
+	orb_publish(ORB_ID(read_point), read_point_pub, &_point_data);
+	
+	}
     }
 
     warnx("[Read_point]exiting");
