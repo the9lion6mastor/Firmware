@@ -514,7 +514,12 @@ else
 	#
 	# Start read_uart term3
 	#
-	read_uart start /dev/ttyS2
+	#read_uart start /dev/ttyS2  #有需要打开
+
+	#
+	# Start read_point
+	#
+	read_point start /dev/ttyS2
 
 	if ver hwcmp PX4FMU_V4
 	then
