@@ -119,7 +119,7 @@ int get_gps_data_main(int argc, char *argv[])
         return 0;
     }
 
-    if (!strcmp(argv[1], "status")) {
+    if (!strcmp(argv[1], "status")) {//模块运行状态
         if (thread_running) {
             warnx("\trunning\n");
 
@@ -130,7 +130,7 @@ int get_gps_data_main(int argc, char *argv[])
         return 0;
     }
 
-    if (!strcmp(argv[1], "1")) {
+    if (!strcmp(argv[1], "1")) {//定点命令的置位
         gps_sequence = 1;
         return 0;
     }
@@ -177,12 +177,12 @@ int get_data_thread_main(int argc, char *argv[])
     float32 sum_z = 0.0;
     double sum_square = 0.0;
 
-    int rc_channels_sub = orb_subscribe(ORB_ID(rc_channels));
+    int rc_channels_sub = orb_subscribe(ORB_ID(rc_channels));//订阅topic
     int vehicle_global_position_sub = orb_subscribe(ORB_ID(vehicle_global_position));
     int vehicle_local_position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
     int home_position_sub = orb_subscribe(ORB_ID(home_position));
 
-    struct rc_channels_s _rc_channels = {};
+    struct rc_channels_s _rc_channels = {};//定义topic的结构体
     struct vehicle_global_position_s _vehicle_global_position = {};
     struct delivery_signal_s _delivery_signal = {};
     struct vehicle_local_position_s local_now = {};
@@ -228,10 +228,10 @@ int get_data_thread_main(int argc, char *argv[])
     _offboard_sp.is_takeoff_sp = false;
     _offboard_sp.timestamp = hrt_absolute_time();
 
-    orb_advert_t delivery_signal_pub = orb_advertise(ORB_ID(delivery_signal), &_delivery_signal);
+    orb_advert_t delivery_signal_pub = orb_advertise(ORB_ID(delivery_signal), &_delivery_signal);//主题公告:发布主题之前是必须的,否则订阅者虽然能订阅，但是得不到数据
     orb_advert_t offboard_setpoint_pub = orb_advertise(ORB_ID(offboard_setpoint), &_offboard_sp);
 
-    orb_publish(ORB_ID(offboard_setpoint), offboard_setpoint_pub, &_offboard_sp);
+    orb_publish(ORB_ID(offboard_setpoint), offboard_setpoint_pub, &_offboard_sp);//发布主题
     orb_publish(ORB_ID(delivery_signal), delivery_signal_pub, &_delivery_signal);
 
     while (!thread_should_exit) {
@@ -241,7 +241,7 @@ int get_data_thread_main(int argc, char *argv[])
         bool updated_vp_local;
         bool updated_home;
 
-        orb_check(rc_channels_sub, &updated_rcch);
+        orb_check(rc_channels_sub, &updated_rcch);//检测订阅是否成功
         orb_check(vehicle_global_position_sub, &updated_vp_global);
         orb_check(vehicle_local_position_sub, &updated_vp_local);
         orb_check(home_position_sub, &updated_home);
@@ -257,7 +257,7 @@ int get_data_thread_main(int argc, char *argv[])
         }
 
         if (updated_vp_local) {
-            orb_copy(ORB_ID(vehicle_local_position), vehicle_local_position_sub, &local_now);
+            orb_copy(ORB_ID(vehicle_local_position), vehicle_local_position_sub, &local_now);//从主题中获得更新数据
             vx = local_now.vx;
             vy = local_now.vy;
             vz = local_now.vz;
@@ -414,7 +414,7 @@ int get_data_thread_main(int argc, char *argv[])
 //        }
 
 
-        if (get_a && get_b && get_c) {
+        if (get_a && get_b && get_c) {//三个点都定好后
             gps_sequence = 0;
             count_time++;
 //            ref_a.cos_lat = cos(global_a.lat * pi / 180);
@@ -449,7 +449,7 @@ int get_data_thread_main(int argc, char *argv[])
 
             sum_square = (double)( (local_a.x - local_now.x) * (local_a.x - local_now.x) +
                                    (local_a.y - local_now.y) * (local_a.y - local_now.y) );
-            if (sum_square < 1.0) {
+            if (sum_square < 1.0) {//A点的范围判断
                 close_a = true;
                 printf("close_a\t");
             }
@@ -469,13 +469,13 @@ int get_data_thread_main(int argc, char *argv[])
             }
 
             sum_square = (double)( vz * vz * 100);
-            if (sum_square < 0.25) {
+            if (sum_square < 0.25) {//z方向范围内为零的判断
                 is_vz_zero = true;
                 printf("vz_zero\n");
             }
 
             sum_square = (double)(100 * vx * vx + 100 * vy * vy);
-            if (sum_square < 0.5) {
+            if (sum_square < 0.5) {//xy方向速度范围内为0
                 is_vxy_zero = true;
                 printf("vxy_zero\n");
             }
@@ -483,20 +483,20 @@ int get_data_thread_main(int argc, char *argv[])
 
             switch (token) {
             case 1:     //A点起飞
-                _offboard_sp.ignore_alt_hold = true;
-                _offboard_sp.ignore_attitude = true;
-                _offboard_sp.ignore_position = false;
-                _offboard_sp.ignore_velocity = true;
+                _offboard_sp.ignore_alt_hold = true;//忽略高度保持
+                _offboard_sp.ignore_attitude = true;//忽略高度
+                _offboard_sp.ignore_position = false;//不忽略位置
+                _offboard_sp.ignore_velocity = true;//忽略速度
                 _offboard_sp.is_idle_sp = false;
-                _offboard_sp.is_land_sp = false;
+                _offboard_sp.is_land_sp = false;//不降落
                 _offboard_sp.is_local_frame = true;
-                _offboard_sp.is_loiter_sp = false;
-                _offboard_sp.is_takeoff_sp = true;
-                _offboard_sp.x = local_a.x;
+                _offboard_sp.is_loiter_sp = false;//不悬停
+                _offboard_sp.is_takeoff_sp = true;//起飞
+                _offboard_sp.x = local_a.x;//目标点
                 _offboard_sp.y = local_a.y;
                 _offboard_sp.z = local_a.z + set_high;
                 _offboard_sp.timestamp = hrt_absolute_time();
-                if (local_now.z < (local_a.z + set_high + (float)0.5)) {
+                if (local_now.z < (local_a.z + set_high + (float)0.5)) {//判断是否到达目标位置一定范围
                     token = 10;//10悬停5s
                 }
                 printf("A take off\n");
@@ -695,7 +695,7 @@ int get_data_thread_main(int argc, char *argv[])
 
         _offboard_sp.timestamp = hrt_absolute_time();
         orb_publish(ORB_ID(delivery_signal), delivery_signal_pub, &_delivery_signal);
-        orb_publish(ORB_ID(offboard_setpoint), offboard_setpoint_pub, &_offboard_sp);
+        orb_publish(ORB_ID(offboard_setpoint), offboard_setpoint_pub, &_offboard_sp);//发布到ooffboard_setpoint主题里,在offboard_pub中执行
         usleep(100000);
     }
 

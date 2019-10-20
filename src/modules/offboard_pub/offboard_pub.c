@@ -144,14 +144,14 @@ int offboard_pub_thread_main(int argc, char *argv[])
         bool updated_mode;
         bool updated_data;
 
-        orb_check(control_mode_sub, &updated_mode);
+        orb_check(control_mode_sub, &updated_mode);//检查topic是否获取成功
         orb_check(offboard_setpoint_sub, &updated_data);
 
         if (updated_mode) {
             orb_copy(ORB_ID(vehicle_control_mode), control_mode_sub, &_control_mode);
         }
         if (updated_data) {
-            orb_copy(ORB_ID(offboard_setpoint), offboard_setpoint_sub, &_offboard_sp);
+            orb_copy(ORB_ID(offboard_setpoint), offboard_setpoint_sub, &_offboard_sp);//获取数据
         }
 
         if (_control_mode.flag_control_offboard_enabled) {
@@ -185,7 +185,7 @@ int offboard_pub_thread_main(int argc, char *argv[])
 
             if (!_offboard_control_mode.ignore_position) {
                 _pos_sp_triplet.current.position_valid = true;
-                _pos_sp_triplet.current.x = _offboard_sp.x;
+                _pos_sp_triplet.current.x = _offboard_sp.x;//设的点赋给系统参数
                 _pos_sp_triplet.current.y = _offboard_sp.y;
                 _pos_sp_triplet.current.z = _offboard_sp.z;
 
